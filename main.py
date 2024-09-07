@@ -4,8 +4,6 @@ import requests
 from dotenv import load_dotenv
 from json import load as json_load, JSONDecodeError
 
-from time import sleep
-
 from datetime import datetime, timedelta
 from timezonefinder import TimezoneFinder
 from time import sleep
@@ -33,6 +31,8 @@ except JSONDecodeError:
     print("Error: The config file is not a valid JSON.")
 except ValueError as e:
     print(f"Error: {e}")
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
 
 tf = TimezoneFinder()
 local_timezone = timezone(tf.timezone_at(lat=latitude, lng=longitude))
@@ -50,7 +50,7 @@ def get_dawn_time(lat, lng):
 
     response = requests.get(url, params=params)
 
-    if response.status_code == 200:
+    if response.ok:
         data = response.json()
         dawn_time = data["results"]["civil_twilight_begin"]
         
@@ -60,11 +60,12 @@ def get_dawn_time(lat, lng):
 
         return local_time
     else:
-        return None  
+        raise ConnectionError("Couldn't connect to sunrise-sunset api")
 
 while(True):
-    now = datetime.now()
+    now = datetime.now(timezone('UTC'))
     dawn_time = get_dawn_time(latitude, longitude)
+    print(f"Dawn was calculated to be happening at {dawn_time}")
 
     if dawn_time < now:
         dawn_time += timedelta(days=1)
