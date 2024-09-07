@@ -1,4 +1,4 @@
 timezonefinder
 pytz
-dotenv
+python-dotenv
 pushbullet.py
